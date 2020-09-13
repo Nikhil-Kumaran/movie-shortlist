@@ -116,9 +116,6 @@ module.exports = (env, argv) => {
       new CompressionPlugin({
         test: /\.js(\?.*)?$/i,
       }),
-      new CopyPlugin({
-        patterns: [{ from: './_redirects' }],
-      }),
     );
     config.performance = {
       hints: 'warning',

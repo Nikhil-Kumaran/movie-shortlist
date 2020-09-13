@@ -4,13 +4,21 @@ import { GENRES } from '../utils/constants';
 import MoviesList from './MoviesList';
 import './Movies.less';
 
+const parseLocalStorage = () => {
+  if (localStorage.getItem('myMovies') !== null) {
+    return JSON.parse(localStorage.getItem('myMovies'));
+  }
+  return [];
+};
+
 const Movies = () => {
   const [moviesLists, setMoviesLists] = useState([]);
   const [myMovies, setMyMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (JSON.parse(localStorage.getItem('myMovies')).length > 0) {
-      setMyMovies(JSON.parse(localStorage.getItem('myMovies')));
-    }
+    setMyMovies(parseLocalStorage(myMovies));
+
+    setLoading(true);
 
     Promise.all(
       GENRES.map(async (genre) => {
@@ -20,13 +28,18 @@ const Movies = () => {
               await fetch(`https://www.omdbapi.com/?apikey=${process.env.API_KEY}&s=${genre}`)
             ).json()
           ).Search,
-          genre: genre,
+          genre,
         };
       }),
-    ).then((res) => {
-      console.log(res);
-      setMoviesLists(res);
-    });
+    )
+      .then((res) => {
+        setLoading(false);
+        setMoviesLists(res);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log('error occured while fetching', error);
+      });
   }, []);
 
   const handleAddToList = (newMovie) => {
@@ -50,16 +63,18 @@ const Movies = () => {
       <div className="movies-lists">
         <MoviesList
           title="My List"
-          movies={myMovies.length === 0 ? JSON.parse(localStorage.getItem('myMovies')) : myMovies}
+          movies={myMovies}
           type="myList"
           handleRemoveFromList={handleRemoveFromList}
         />
         {moviesLists.map((moviesList) => (
           <MoviesList
+            type="genre"
             key={moviesList.genre}
             title={moviesList.genre}
             movies={moviesList.movies}
             handleAddToList={handleAddToList}
+            loading={loading}
           />
         ))}
       </div>

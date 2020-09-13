@@ -1,13 +1,23 @@
 import React from 'react';
-import { Card, Popover, Button } from 'antd';
+import { Card, Popover, Button, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+import PropTypes from 'prop-types';
 import './MoviesList.less';
 
-const MoviesList = ({ title, movies, handleAddToList, handleRemoveFromList, type }) => {
+const MoviesList = ({ title, movies, handleAddToList, handleRemoveFromList, type, loading }) => {
+  if (loading) {
+    return (
+      <section className="movies-list">
+        <h1>{title}</h1>
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+      </section>
+    );
+  }
   return (
     <section className="movies-list">
       <h1>{title}</h1>
       <div className="movies">
-        {movies.length > 0 ? (
+        {movies && movies.length > 0 ? (
           movies.map((movie) => {
             return (
               <div key={movie.imdbID} className="card-wrapper">
@@ -32,6 +42,21 @@ const MoviesList = ({ title, movies, handleAddToList, handleRemoveFromList, type
       </div>
     </section>
   );
+};
+
+MoviesList.propTypes = {
+  title: PropTypes.string.isRequired,
+  movies: PropTypes.array.isRequired,
+  handleAddToList: PropTypes.func,
+  handleRemoveFromList: PropTypes.func,
+  type: PropTypes.string.isRequired,
+  loading: PropTypes.bool,
+};
+
+MoviesList.defaultProps = {
+  handleAddToList: () => {},
+  handleRemoveFromList: () => {},
+  loading: false,
 };
 
 export default MoviesList;

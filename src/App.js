@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime.js';
 import { hot } from 'react-hot-loader';
 import React from 'react';
 import Movies from './components/Movies';
