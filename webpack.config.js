@@ -115,6 +115,9 @@ module.exports = (env, argv) => {
       new CompressionPlugin({
         test: /\.js(\?.*)?$/i,
       }),
+      new webpack.DefinePlugin({
+        'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
+      }),
     );
     config.performance = {
       hints: 'warning',
