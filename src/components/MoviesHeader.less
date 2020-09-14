@@ -1,24 +1,27 @@
 .movie-header {
-  position: fixed;
+  position: relative;
   z-index: 2;
   top: 0;
   width: 100%;
+  min-height: 200px;
+
   > h1 {
     position: absolute;
-    top: 100px;
+    top: 50%;
     transform: translateY(-50%);
     z-index: 3;
-    padding: 0 2rem;
-    font-size: xx-large;
+    padding: 1rem;
+    margin-left: 0.5rem;
+    font-size: 2em;
     color: #fff;
+    background: rgba(0, 0, 0, 0.356);
   }
   .content {
     position: relative;
-    width: 350px !important;
-    height: 200px;
-
-    left: 50%;
-    transform: translateX(-50%);
+    max-height: 400px;
+    img {
+      width: 100%;
+    }
   }
   .ant-carousel {
     background: #364d79;

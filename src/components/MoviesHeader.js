@@ -1,31 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Carousel } from 'antd';
 import './MoviesHeader.less';
+import PropTypes from 'prop-types';
 
-const MoviesHeader = () => {
-  const [posters, setPosters] = useState([]);
-
-  useEffect(() => {
-    fetch(`https://www.omdbapi.com/?apikey=${process.env.API_KEY}&s=avengers`)
-      .then((res) => res.json())
-      .then((res) => {
-        const urls = res.Search.map((data) => {
-          return { url: data.Poster, id: data.imdbID };
-        });
-        setPosters(urls);
-      });
-  }, []);
-
+const MoviesHeader = ({ moviePosters }) => {
   return (
     <div className="movie-header">
-      <h1>Movie List</h1>
+      <h1>Movie Shortlist</h1>
       <Carousel autoplay dots={false}>
-        {posters.map((poster) => (
-          <img key={poster.id} className="content" src={poster.url} />
+        {moviePosters.map((poster) => (
+          <div className="content" key={poster}>
+            <img src={poster} />
+          </div>
         ))}
       </Carousel>
     </div>
   );
+};
+
+MoviesHeader.propTypes = {
+  moviePosters: PropTypes.array.isRequired,
 };
 
 export default MoviesHeader;

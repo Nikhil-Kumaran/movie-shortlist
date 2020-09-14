@@ -3,7 +3,6 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const path = require('path');
 const webpack = require('webpack');
 const CompressionPlugin = require('compression-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
 const { jsonBeautify } = require('beautify-json');
 const Dotenv = require('dotenv-webpack');
 
@@ -73,7 +72,7 @@ module.exports = (env, argv) => {
     config.entry = ['react-hot-loader/patch', './src'];
     config.devtool = 'inline-source-map';
     config.resolve.alias['react-dom'] = '@hot-loader/react-dom';
-    config.plugins.push(new webpack.HotModuleReplacementPlugin(), new Dotenv());
+    config.plugins.push(new webpack.HotModuleReplacementPlugin());
     config.devServer = {
       compress: true,
       hot: true,
@@ -115,6 +114,7 @@ module.exports = (env, argv) => {
       new CompressionPlugin({
         test: /\.js(\?.*)?$/i,
       }),
+      new Dotenv(),
       new webpack.DefinePlugin({
         'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
       }),

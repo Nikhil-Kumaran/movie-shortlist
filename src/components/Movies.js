@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import MovieHeader from './MoviesHeader';
-import { GENRES } from '../utils/constants';
 import MoviesList from './MoviesList';
 import './Movies.less';
+import { useFetch } from '../utils/useFetch';
+import { LoadingOutlined } from '@ant-design/icons';
+import { Spin, message } from 'antd';
+import Favourites from './Favourites';
 
 const parseLocalStorage = () => {
   if (localStorage.getItem('myMovies') !== null) {
@@ -12,71 +15,78 @@ const parseLocalStorage = () => {
 };
 
 const Movies = () => {
-  const [moviesLists, setMoviesLists] = useState([]);
   const [myMovies, setMyMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [moviePosters, setMoviePosters] = useState([]);
+
+  message.config({
+    maxCount: 1,
+  });
+
   useEffect(() => {
     setMyMovies(parseLocalStorage(myMovies));
-
-    setLoading(true);
-
-    Promise.all(
-      GENRES.map(async (genre) => {
-        return {
-          movies: (
-            await (
-              await fetch(`https://www.omdbapi.com/?apikey=${process.env.API_KEY}&s=${genre}`)
-            ).json()
-          ).Search,
-          genre,
-        };
-      }),
-    )
-      .then((res) => {
-        setLoading(false);
-        setMoviesLists(res);
-      })
-      .catch((error) => {
-        setLoading(false);
-        console.log('error occured while fetching', error);
-      });
   }, []);
 
+  const [genres, genresError, genresIsLoading] = useFetch(
+    `https://api.themoviedb.org/3/genre/movie/list?api_key=${process.env.API_KEY}&language=en-US`,
+  );
+
+  useEffect(() => {
+    if (genresError && genresError.status_message) {
+      message.error(`Error while fetching genres - ${genresError.status_message}`);
+    }
+  }, [genresError]);
+
   const handleAddToList = (newMovie) => {
-    if (!myMovies.find((movie) => movie.imdbID === newMovie.imdbID)) {
+    if (!myMovies.find((movie) => movie.id === newMovie.id)) {
       localStorage.setItem('myMovies', JSON.stringify([...myMovies, newMovie]));
       setMyMovies([...myMovies, newMovie]);
+      message.success(`${newMovie.title} added to your favourites`);
+    } else {
+      message.error(`${newMovie.title} already exists in your favourites`);
     }
   };
 
   const handleRemoveFromList = (newMovie) => {
     localStorage.setItem(
       'myMovies',
-      JSON.stringify(myMovies.filter((movie) => movie.imdbID !== newMovie.imdbID)),
+      JSON.stringify(myMovies.filter((movie) => movie.id !== newMovie.id)),
     );
-    setMyMovies(myMovies.filter((movie) => movie.imdbID !== newMovie.imdbID));
+    setMyMovies(myMovies.filter((movie) => movie.id !== newMovie.id));
+    message.success(`${newMovie.title} removed from your favourites`);
   };
+
+  const handleSetMoviePosters = (movies) => {
+    if (movies) {
+      setMoviePosters([
+        ...moviePosters,
+        ...movies.results.map((movie) => `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`),
+      ]);
+    }
+  };
+
+  if (genresIsLoading) {
+    const antIcon = <LoadingOutlined style={{ fontSize: 64 }} spin />;
+
+    return <Spin className="spinner" indicator={antIcon} />;
+  }
 
   return (
     <>
-      <MovieHeader />
+      <MovieHeader moviePosters={moviePosters} />
       <div className="movies-lists">
-        <MoviesList
-          title="My List"
-          movies={myMovies}
-          type="myList"
-          handleRemoveFromList={handleRemoveFromList}
-        />
-        {moviesLists.map((moviesList) => (
-          <MoviesList
-            type="genre"
-            key={moviesList.genre}
-            title={moviesList.genre}
-            movies={moviesList.movies}
-            handleAddToList={handleAddToList}
-            loading={loading}
-          />
-        ))}
+        <Favourites movies={myMovies} handleRemoveFromList={handleRemoveFromList} />
+        {genres &&
+          genres.genres &&
+          genres.genres
+            .slice(0, 9) // Will add pagination later
+            .map((genre) => (
+              <MoviesList
+                key={genre.id}
+                genre={genre}
+                handleSetMoviePosters={handleSetMoviePosters}
+                handleAddToList={handleAddToList}
+              />
+            ))}
       </div>
     </>
   );
