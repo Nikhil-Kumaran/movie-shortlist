@@ -64,7 +64,6 @@ let config = {
       template: './index.html',
       favicon: './favicon.png',
     }),
-    new Dotenv(),
   ],
 };
 
@@ -74,7 +73,7 @@ module.exports = (env, argv) => {
     config.entry = ['react-hot-loader/patch', './src'];
     config.devtool = 'inline-source-map';
     config.resolve.alias['react-dom'] = '@hot-loader/react-dom';
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
+    config.plugins.push(new webpack.HotModuleReplacementPlugin(), new Dotenv());
     config.devServer = {
       compress: true,
       hot: true,
